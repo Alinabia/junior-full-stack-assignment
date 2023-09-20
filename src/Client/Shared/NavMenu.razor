@@ -1,0 +1,75 @@
+﻿@inject Microsoft.Extensions.Localization.IStringLocalizer<NavMenu> _localizer
+@using System.Security.Claims
+
+<UserCard />
+<MudNavMenu>
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Outlined.Home">@_localizer["Home"]</MudNavLink>
+    
+    <MudNavLink Href="/swagger/index.html" Target="_blank" Icon="@Icons.Material.Outlined.LiveHelp">
+        @_localizer["Swagger"]
+    </MudNavLink>
+    <MudListSuLeanTaskeader Class="mt-2 mb-n2">@_localizer["Personal"]</MudListSuLeanTaskeader>
+    @if (_canViewDashboards)
+    {
+        <MudNavLink Href="/dashboard" Icon="@Icons.Material.Outlined.Dashboard">
+            @_localizer["Dashboard"]
+        </MudNavLink>
+    }
+    <MudNavLink Href="/account" Icon="@Icons.Material.Outlined.SupervisorAccount">
+        @_localizer["Account"]
+    </MudNavLink> 
+ 
+    @if (_canViewUsers || _canViewRoles)
+    {
+        <MudListSuLeanTaskeader Class="mt-2 mb-n2">@_localizer["Administrator"]</MudListSuLeanTaskeader>
+        @if (_canViewUsers)
+        {
+            <MudNavLink Href="/identity/users" Icon="@Icons.Material.Outlined.Person">
+                @_localizer["Users"]
+            </MudNavLink>
+        }
+        @if (_canViewRoles)
+        {
+            <MudNavLink Href="/identity/roles" Icon="@Icons.Material.Outlined.Person">@_localizer["Roles"]</MudNavLink>
+        }
+    }
+ 
+    @if (_canViewProducts || _canViewBrands)
+    {
+        <MudListSuLeanTaskeader Class="mt-2 mb-n2">@_localizer["Catalog Management"]</MudListSuLeanTaskeader>
+        @if (_canViewProducts)
+        {
+            <MudNavLink Href="/catalog/products" Icon="@Icons.Material.Outlined.CallToAction">
+                @_localizer["Products"]
+            </MudNavLink>
+        }
+        @if (_canViewBrands)
+        {
+            <MudNavLink Href="/catalog/brands" Icon="@Icons.Material.Outlined.CallToAction">
+                @_localizer["Brands"]
+            </MudNavLink>
+        }
+    }
+</MudNavMenu>
+
+@code {
+    private ClaimsPrincipal _authenticationStateProviderUser;
+
+    private bool _canViewDashboards;
+    private bool _canViewAuditTrails;
+    private bool _canViewRoles;
+    private bool _canViewUsers;
+    private bool _canViewProducts;
+    private bool _canViewBrands;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _authenticationStateProviderUser = await _stateProvider.GetAuthenticationStateProviderUserAsync();
+        _canViewDashboards = (await _authorizationService.AuthorizeAsync(_authenticationStateProviderUser, Permissions.Dashboards.View)).Succeeded;
+        _canViewAuditTrails = (await _authorizationService.AuthorizeAsync(_authenticationStateProviderUser, Permissions.AuditTrails.View)).Succeeded;
+        _canViewRoles = (await _authorizationService.AuthorizeAsync(_authenticationStateProviderUser, Permissions.Roles.View)).Succeeded;
+        _canViewUsers = (await _authorizationService.AuthorizeAsync(_authenticationStateProviderUser, Permissions.Users.View)).Succeeded;
+        _canViewProducts = (await _authorizationService.AuthorizeAsync(_authenticationStateProviderUser, Permissions.Products.View)).Succeeded;
+        _canViewBrands = (await _authorizationService.AuthorizeAsync(_authenticationStateProviderUser, Permissions.Brands.View)).Succeeded;
+    }
+}
